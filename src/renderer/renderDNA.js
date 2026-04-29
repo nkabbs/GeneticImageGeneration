@@ -50,8 +50,7 @@ function applySymmetry(canvas, ctx, W, H, globals) {
     } else if (axis === 'rotational') {
       const N = Math.max(2, globals.symmetryN || 6)
       const cx = W / 2, cy = H / 2
-      const snap = document.createElement('canvas')
-      snap.width = W; snap.height = H
+      const snap = new OffscreenCanvas(W, H)
       snap.getContext('2d').drawImage(canvas, 0, 0)
 
       for (let i = 1; i < N; i++) {
@@ -92,8 +91,7 @@ export function renderDNA(canvas, dna) {
     if (!layer) continue
     if (layer.kind === 'pattern' && !layer.gene.enabled) continue
 
-    const off = document.createElement('canvas')
-    off.width = W; off.height = H
+    const off = new OffscreenCanvas(W, H)
     const offCtx = off.getContext('2d')
 
     if (layer.kind === 'bg') {

@@ -129,7 +129,7 @@ function randomLSystemRules() {
     angle:         preset.angle + randFloat(-8, 8),
     angleVariance: randFloat(1, 8),
     iterations:    randInt(3, 6),
-    stepLength:    randFloat(8, 22),
+    stepLength:    randFloat(18, 42),
     stepDecay:     randFloat(0.55, 0.82),
     branchChance:  randFloat(0.1, 0.6),
     tropism:       { x: randFloat(-0.04, 0.04), y: randFloat(-0.15, 0.04) },
@@ -202,7 +202,7 @@ function randomGeometricRules() {
 const PATTERN_TYPES = ['lsystem', 'ifs', 'geometric']
 
 export function randomPatternGene(id) {
-  const type = 'ifs' // pick(PATTERN_TYPES)
+  const type = 'lsystem' // pick(PATTERN_TYPES)
   const rules = type === 'lsystem' ? randomLSystemRules()
               : type === 'ifs'     ? randomIFSRules()
               :                      randomGeometricRules()
@@ -252,10 +252,10 @@ export function randomDNA() {
   const patternCount = randInt(10, 20)
   const bgCount      = randInt(1, 3)
   const patterns     = Array.from({ length: patternCount }, (_, i) => randomPatternGene(`p${i}`))
-  const backgrounds  = Array.from({ length: bgCount },      (_, i) => randomBackgroundGene(`bg${i}`))
-
+  //const backgrounds  = Array.from({ length: bgCount },      (_, i) => randomBackgroundGene(`bg${i}`))
+  const backgrounds  = []
   const pipeline = [
-    ...backgrounds.map(bg => ({ ref: bg.id, post: pick(BG_POSTS) })),
+    //...backgrounds.map(bg => ({ ref: bg.id, post: pick(BG_POSTS) })),
     ...patterns.map(p      => ({ ref: p.id,  post: pick(PATTERN_POSTS) })),
   ]
 

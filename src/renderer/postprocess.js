@@ -9,19 +9,23 @@ export function applyPostProcess(offCanvas, postStr, field) {
   const ctx = offCanvas.getContext('2d')
 
   if (type === 'blur') {
-    const tmp = document.createElement('canvas')
-    tmp.width = W; tmp.height = H
+    const tmp = new OffscreenCanvas(W, H)
     const tCtx = tmp.getContext('2d')
     tCtx.filter = `blur(${N}px)`
+    tCtx.drawImage(offCanvas, 0, 0)
+    tCtx.filter = 'none'
+    tCtx.globalCompositeOperation = 'destination-in'
     tCtx.drawImage(offCanvas, 0, 0)
     ctx.clearRect(0, 0, W, H)
     ctx.drawImage(tmp, 0, 0)
 
   } else if (type === 'glow') {
-    const tmp = document.createElement('canvas')
-    tmp.width = W; tmp.height = H
+    const tmp = new OffscreenCanvas(W, H)
     const tCtx = tmp.getContext('2d')
     tCtx.filter = `blur(${N}px)`
+    tCtx.drawImage(offCanvas, 0, 0)
+    tCtx.filter = 'none'
+    tCtx.globalCompositeOperation = 'destination-in'
     tCtx.drawImage(offCanvas, 0, 0)
     ctx.save()
     ctx.globalCompositeOperation = 'screen'
@@ -30,11 +34,12 @@ export function applyPostProcess(offCanvas, postStr, field) {
     ctx.restore()
 
   } else if (type === 'sharpen') {
-    // Unsharp mask: composite a blurred copy back with overlay
-    const tmp = document.createElement('canvas')
-    tmp.width = W; tmp.height = H
+    const tmp = new OffscreenCanvas(W, H)
     const tCtx = tmp.getContext('2d')
     tCtx.filter = 'blur(1.5px)'
+    tCtx.drawImage(offCanvas, 0, 0)
+    tCtx.filter = 'none'
+    tCtx.globalCompositeOperation = 'destination-in'
     tCtx.drawImage(offCanvas, 0, 0)
     ctx.save()
     ctx.globalCompositeOperation = 'overlay'

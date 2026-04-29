@@ -15,6 +15,49 @@ function expand(axiom, productions, iterations) {
   return s
 }
 
+// Billiard-ball reflection: splits a step into sub-segments that bounce off canvas walls.
+function reflectStep(x0, y0, heading, len, W, H) {
+  const segments = []
+  let cx = clamp(x0, 0, W)
+  let cy = clamp(y0, 0, H)
+  let ch = heading
+  let remaining = len
+  let bounced = false
+
+  for (let i = 0; i < 20 && remaining > 0.01; i++) {
+    const dx = Math.cos(ch)
+    const dy = Math.sin(ch)
+    const ex = cx + dx * remaining
+    const ey = cy + dy * remaining
+
+    if (ex >= 0 && ex <= W && ey >= 0 && ey <= H) {
+      segments.push({ x1: cx, y1: cy, x2: ex, y2: ey })
+      return { x: ex, y: ey, heading: ch, bounced, segments }
+    }
+
+    // Find t to the nearest wall crossing
+    let t = Infinity, rx = false, ry = false
+    if (dx >  1e-9) { const v = (W - cx) / dx; if (v >= 0 && v < t) { t = v; rx = true;  ry = false } }
+    if (dx < -1e-9) { const v = (0 - cx) / dx; if (v >= 0 && v < t) { t = v; rx = true;  ry = false } }
+    if (dy >  1e-9) { const v = (H - cy) / dy; if (v >= 0 && v < t) { t = v; rx = false; ry = true  } }
+    if (dy < -1e-9) { const v = (0 - cy) / dy; if (v >= 0 && v < t) { t = v; rx = false; ry = true  } }
+
+    if (!isFinite(t)) break
+
+    const bx = clamp(cx + dx * t, 0, W)
+    const by = clamp(cy + dy * t, 0, H)
+    segments.push({ x1: cx, y1: cy, x2: bx, y2: by })
+    cx = bx; cy = by
+    remaining -= t
+
+    if (rx) ch = Math.PI - ch
+    else    ch = -ch
+    bounced = true
+  }
+
+  return { x: cx, y: cy, heading: ch, bounced, segments }
+}
+
 export function drawLSystem(ctx, gene, W, H, palette, field, globals) {
   const { placement, color, rules } = gene
   const { axiom, productions, angle, angleVariance, stepDecay, tropism } = rules
@@ -26,7 +69,7 @@ export function drawLSystem(ctx, gene, W, H, palette, field, globals) {
   const noise2D = createNoise2D()
   const resolveColor = makePatternColorResolver(palette, noise2D)
 
-  const baseStep = rules.stepLength * (W / 800)
+  const baseStep = rules.stepLength * (W / 800) * globals.scale
   const instances = Math.max(1, placement.repeatCount)
   const angleRad = angle * Math.PI / 180
   const maxDepth = iterations * 3
@@ -57,15 +100,12 @@ export function drawLSystem(ctx, gene, W, H, palette, field, globals) {
       switch (ch) {
         case 'F':
         case 'G': {
-          // Tropism: gravity-like bending
           const bend = tropism.x * Math.cos(heading) + tropism.y * Math.sin(heading)
           heading += bend * 0.1 * (1 + chaos * 0.5)
 
-          // Per-step angle jitter scaled by chaos
           const jitter = gaussian(0, (angleVariance * Math.PI / 180) * Math.max(0.05, chaos))
           let drawHeading = heading + jitter
 
-          // Field influence bends turtle direction
           if (field && placement.fieldFollow > 0) {
             const cnx = clamp(x / W, 0, 1)
             const cny = clamp(y / H, 0, 1)
@@ -74,21 +114,23 @@ export function drawLSystem(ctx, gene, W, H, palette, field, globals) {
             drawHeading = drawHeading * (1 - blend) + fa * blend
           }
 
-          const nx2 = x + Math.cos(drawHeading) * stepLen
-          const ny2 = y + Math.sin(drawHeading) * stepLen
-
           const { css } = resolveColor(color, x, y, W, H, depth, maxDepth, chaos)
           const lw = Math.max(0.3, stepLen * 0.055 * Math.pow(stepDecay, depth))
 
-          ctx.beginPath()
-          ctx.moveTo(x, y)
-          ctx.lineTo(nx2, ny2)
+          const result = reflectStep(x, y, drawHeading, stepLen, W, H)
+
           ctx.strokeStyle = css
           ctx.lineWidth = lw
-          ctx.stroke()
+          for (const seg of result.segments) {
+            ctx.beginPath()
+            ctx.moveTo(seg.x1, seg.y1)
+            ctx.lineTo(seg.x2, seg.y2)
+            ctx.stroke()
+          }
 
-          x = nx2
-          y = ny2
+          x = result.x
+          y = result.y
+          if (result.bounced) heading = result.heading
           break
         }
         case '+':
