@@ -1,0 +1,323 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #0d0d12;
+  --surface: #16161f;
+  --border: #2a2a38;
+  --accent: #7c6fff;
+  --accent-dim: #4a44a0;
+  --text: #c8c8d8;
+  --text-dim: #666678;
+  --selected-glow: rgba(124, 111, 255, 0.55);
+  --radius: 6px;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ── Controls ────────────────────────────────── */
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  gap: 12px;
+}
+
+.controls-left {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.controls-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #e8e8f0;
+}
+
+.generation-badge {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent);
+  background: rgba(124, 111, 255, 0.12);
+  border: 1px solid rgba(124, 111, 255, 0.3);
+  border-radius: 20px;
+  padding: 2px 10px;
+  letter-spacing: 0.03em;
+}
+
+.grid-size-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  cursor: default;
+}
+
+.grid-size-select {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+
+.grid-size-select:focus {
+  border-color: var(--accent-dim);
+}
+
+.next-gen-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 7px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  white-space: nowrap;
+}
+
+.next-gen-btn:hover {
+  background: #9d93ff;
+}
+
+.next-gen-btn:active {
+  opacity: 0.8;
+}
+
+/* ── Main / Grid ─────────────────────────────── */
+
+.main {
+  padding: 16px 20px;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 3), 1fr);
+  gap: 12px;
+}
+
+/* ── Image Cell ──────────────────────────────── */
+
+.image-cell {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.image-cell--selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--selected-glow);
+}
+
+.canvas-wrapper {
+  position: relative;
+  cursor: pointer;
+  flex: 1;
+}
+
+.gen-canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  background: #1a1a22;
+}
+
+.selected-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.cell-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-top: 1px solid var(--border);
+}
+
+.select-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+}
+
+.select-label input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.save-btn {
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 3px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+
+.save-btn:hover {
+  color: var(--text);
+  border-color: var(--accent-dim);
+}
+
+/* ── Saved Gallery ────────────────────────────── */
+
+.saved-gallery {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  bottom: 0;
+}
+
+.gallery-label {
+  color: var(--text-dim);
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.gallery-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  padding-bottom: 2px;
+}
+
+.gallery-thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  transition: border-color 0.12s, transform 0.12s;
+}
+
+.gallery-thumb:hover {
+  border-color: var(--accent);
+  transform: scale(1.06);
+}
+
+/* ── Modal ────────────────────────────────────── */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 90vmin;
+  max-height: 90vmin;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+}
+
+.modal-image {
+  display: block;
+  width: 100%;
+  max-height: 70vmin;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.modal-actions button {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+
+.modal-actions button:hover {
+  border-color: var(--accent);
+  color: #e8e8f8;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
